@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { excludePassword } from 'src/common/utils';
 
 @Injectable()
 export class AuthService {
@@ -55,11 +56,4 @@ export class AuthService {
 
     return { accessToken };
   }
-}
-
-function excludePassword<User extends { password: string }>(
-  user: User,
-): Omit<User, 'password'> {
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
 }
