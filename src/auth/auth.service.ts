@@ -11,12 +11,14 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { excludePassword } from 'src/common/utils';
 import { jwtConstants } from './constants';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -141,5 +143,52 @@ export class AuthService {
     });
 
     return { message: 'Logged out from specific session successfully' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('Email not found');
+    }
+
+    const payload = { sub: user.id };
+    const token = this.jwtService.sign(payload, { expiresIn: '1h' });
+
+    // Send the token via email (this is a placeholder, you'll need to implement the actual email sending)
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Password Reset',
+      template: './reset-password',
+      context: {
+        name: user.name,
+        token,
+      },
+    });
+
+    return { message: 'Password reset email sent' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
+
+      return { message: 'Password reset successfully' };
+    } catch (e) {
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Reset token expired');
+      }
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 }
