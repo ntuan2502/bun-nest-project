@@ -14,18 +14,43 @@ datasource db {
 }
 
 model User {
-  id       Int            @id @default(autoincrement())
-  name     String
-  email    String         @unique
-  password String
-  tokens   RefreshToken[]
+  id                Int                 @id @default(autoincrement())
+  name              String
+  email             String              @unique
+  password          String
+  session           UserSession[]
+  forgotPassword    ForgotPassword[]
+  emailVerification EmailVerification[]
+  verified          Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 }
 
-model RefreshToken {
-  id     Int    @id @default(autoincrement())
-  userId Int
-  token  String
-  user   User   @relation(fields: [userId], references: [id])
+model UserSession {
+  id               Int      @id @default(autoincrement())
+  accessToken      String   @unique
+  refreshToken     String   @unique
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
+  accessExpiresAt  DateTime
+  refreshExpiresAt DateTime
+}
 
-  @@unique([token])
+model ForgotPassword {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }

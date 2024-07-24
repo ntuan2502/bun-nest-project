@@ -12,18 +12,19 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     PrismaModule,
     MailerModule.forRoot({
       transport: {
-        host: 'smtp.example.com',
+        host: 'smtp.gmail.com',
         port: 587,
+        secure: false,
         auth: {
-          user: 'user@example.com',
-          pass: 'password',
+          user: process.env.EMAIL,
+          pass: process.env.PASSWORD,
         },
       },
       defaults: {
-        from: '"No Reply" <no-reply@example.com>',
+        from: '"Nest JS from Tún" <email@example.com>',
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: join(process.cwd(), 'src/mail/templates'),
         adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
         options: {
           strict: true,

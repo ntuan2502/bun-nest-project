@@ -5,21 +5,25 @@ import {
   UseGuards,
   Request,
   Get,
+  Param,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterDto } from './dto/register';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { TokenDto } from './dto/token.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   @Post('login')
@@ -28,8 +32,8 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -39,24 +43,32 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('logout')
-  async logout(@Request() req) {
-    return this.authService.logout(req.user.id);
+  @Post('logout-all')
+  async logoutAll(@Request() req) {
+    return this.authService.logoutAll(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('logout-specific')
-  async logoutSpecific(@Body('refreshToken') refreshToken: string) {
-    return this.authService.logoutSpecific(refreshToken);
+  @Post('logout')
+  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.logout(refreshTokenDto);
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto.email);
+    return this.authService.forgotPassword(forgotPasswordDto);
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
+  async resetPassword(
+    @Query() tokenDto: TokenDto,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(tokenDto, resetPasswordDto);
+  }
+
+  @Get('verify-email')
+  async verifyEmail(@Query() tokenDto: TokenDto) {
+    return this.authService.verifyEmail(tokenDto);
   }
 }

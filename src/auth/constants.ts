@@ -1,3 +1,3 @@
 export const jwtConstants = {
-  secret: 'yourSecretKey', // Thay thế bằng một khóa bí mật thực sự
+  secret: process.env.SECRET_KEY, // Thay thế bằng một khóa bí mật thực sự
 };
