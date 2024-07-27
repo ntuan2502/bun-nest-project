@@ -8,4 +8,7 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Password is required' })
   @IsString()
   readonly password: string;
+
+  readonly userAgent: string;
+  readonly ipAddress: string;
 }

@@ -145,7 +145,7 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, userAgent: any, ipAddress: any) {
     const { email, password } = loginDto;
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -172,6 +172,8 @@ export class AuthService {
         accessToken,
         refreshToken,
         userId: user.id,
+        userAgent,
+        ipAddress,
         accessExpiresAt,
         refreshExpiresAt,
       },
@@ -317,5 +319,16 @@ export class AuthService {
     await this.prisma.forgotPassword.delete({ where: { token } });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async updateLastOnline(
+    accessToken: string,
+    userAgent: string,
+    ipAddress: string,
+  ) {
+    await this.prisma.userSession.update({
+      where: { accessToken },
+      data: { lastOnline: new Date(), userAgent, ipAddress },
+    });
   }
 }

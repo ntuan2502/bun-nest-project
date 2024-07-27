@@ -30,6 +30,9 @@ model UserSession {
   id               Int      @id @default(autoincrement())
   accessToken      String   @unique
   refreshToken     String   @unique
+  userAgent        String?
+  ipAddress        String?
+  lastOnline       DateTime @default(now())
   userId           Int
   user             User     @relation(fields: [userId], references: [id])
   createdAt        DateTime @default(now())

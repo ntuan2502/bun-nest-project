@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register';
@@ -16,6 +17,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenDto } from './dto/token.dto';
+import { SessionGuard } from './session.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,8 +29,10 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Req() req, @Body() loginDto: LoginDto) {
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const ipAddress = req.ip;
+    return this.authService.login(loginDto, userAgent, ipAddress);
   }
 
   @Post('refresh')
@@ -36,7 +40,7 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SessionGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;

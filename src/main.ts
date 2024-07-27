@@ -10,6 +10,6 @@ async function bootstrap() {
     transform: true,
     validationError: { target: false, value: false },
   }));
-  await app.listen(3000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();
